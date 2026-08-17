@@ -1,57 +1,53 @@
 # Calendar Peek
 
-Calendar Peek is a small, open-source Chrome/Edge extension for seeing a coworker's Google Calendar availability with one click.
+A small, open-source Chrome/Edge extension for checking a coworker's Google Calendar availability from Google Workspace or Slack.
 
 ![Calendar Peek Slack availability popup](docs/calendar-peek-slack.png)
 
-## Features
+## What it does
 
-### Google Workspace profile cards
+### Google Workspace
 
-1. Click a coworker's avatar or name in Gmail, Google Calendar, Drive, Docs, Meet, Chat, or Contacts.
-2. A blue calendar icon appears on the visible profile card.
-3. Click it to open Google Calendar and select that coworker through Google's native **Search for people** control.
+Click a coworker's avatar or name in Gmail, Calendar, Drive, Docs, Meet, Chat, or Contacts. Calendar Peek adds a calendar button that opens Google Calendar's native **Search for people** flow.
 
-The toolbar popup is a simple fallback: enter a coworker's work email and click **View calendar**.
+The toolbar popup is also available as a fallback. Enter a work email and click **View calendar**.
 
-### Slack web availability popup
+### Slack
 
-1. Open Slack in the browser at `app.slack.com` or another `*.slack.com` web URL.
-2. Click a coworker's name or avatar to open their profile.
-3. If Slack exposes a valid email address in the profile, Calendar Peek adds a calendar/check icon beside the profile controls.
-4. Click the icon to open a compact popup inside Slack.
-5. The popup shows event names, exact timeframes, busy blocks, and free windows for the selected day, with previous/today/next navigation and an optional **Open in Google Calendar** link.
+On `app.slack.com` or another `*.slack.com` web URL:
 
-No Slack app, Slack token, backend server, or analytics is used.
+1. Open a coworker's profile.
+2. Click the Calendar Peek button if Slack exposes their email address.
+3. Use the popup to see event names, timeframes, busy blocks, and free windows.
+4. Move between previous, today, and next, or open the day in Google Calendar.
 
-## Important limitations
+This works in Slack's browser app only. It does not use a Slack app, Slack token, backend, or analytics.
 
-- Slack integration works in the browser, not inside Slack's native desktop or mobile applications.
-- Slack must make the coworker's email visible to you in the profile UI. If the email is hidden, Calendar Peek cannot resolve the Google calendar without a separate Slack app/API integration.
-- The Slack email must match a Google Calendar identifier you can access.
-- Google Calendar and your Workspace administrator still enforce all sharing permissions. Calendar Peek cannot bypass them.
-- Slack and Google Workspace are frequently changing single-page applications. Future UI updates may require selector adjustments in `src/slack.js`, `src/profile-card.js`, or `src/calendar.js`.
+## Limitations
+
+- Slack must show the coworker's email in the profile UI.
+- The email must match a Google Calendar identifier you can access.
+- Google Calendar and Workspace sharing settings still apply. Calendar Peek cannot bypass them.
+- Google and Slack are changing single-page apps. UI changes may require updates to `src/slack.js`, `src/profile-card.js`, or `src/calendar.js`.
 
 ## Install locally
 
-1. Extract the project.
-2. Open `chrome://extensions` in Chrome, Edge, Brave, or another Chromium browser.
-3. Turn on **Developer mode**.
-4. Click **Load unpacked**.
-5. Select the extracted `calendar-peek-extension` folder.
-6. Refresh any already-open Google Workspace and Slack tabs once.
+1. Open `chrome://extensions` in Chrome, Edge, Brave, or another Chromium browser.
+2. Enable **Developer mode**.
+3. Click **Load unpacked** and select this folder.
+4. Refresh open Google Workspace and Slack tabs.
 
-The extension's fixed development ID is:
+The fixed development extension ID is:
 
 ```text
 pcdcgkbgimicaioepjbghpmmjadeghej
 ```
 
-## One-time Google OAuth setup for Slack
+## Google OAuth setup
 
-The original Google Workspace profile-card feature does not require OAuth. The in-Slack free/busy popup does, because Google's Calendar API requires an authorized OAuth client.
+The Google Workspace profile-card feature does not need OAuth. The Slack availability popup does, because Google requires an authorized OAuth client for Calendar API access.
 
-Follow [`SETUP_GOOGLE_OAUTH.md`](SETUP_GOOGLE_OAUTH.md), or open Calendar Peek's **Extension options** after loading it. The setup page can patch the selected source `manifest.json` for you.
+Follow [`SETUP_GOOGLE_OAUTH.md`](SETUP_GOOGLE_OAUTH.md), or open **Extension options** after loading the extension. The setup page can patch the selected `manifest.json` for you.
 
 Calendar Peek requests these read-only scopes:
 
@@ -60,63 +56,32 @@ https://www.googleapis.com/auth/calendar.events.freebusy
 https://www.googleapis.com/auth/calendar.events.readonly
 ```
 
-The first scope permits availability checks. The second permits reading event names and start/end times on calendars your Google account can already access. Calendar Peek does not request descriptions, attendees, locations, or calendar editing access.
+The first checks availability. The second reads event titles and times from calendars your account can already access. No descriptions, attendees, locations, or calendar editing access are requested.
 
 ## Privacy and permissions
 
 - No analytics, advertising, trackers, remote scripts, or external servers.
 - No Slack API access or Slack tokens.
 - Slack profile data is read only from the page already visible to you.
-- Availability requests go directly from the extension to Google's Calendar API.
-- The selected coworker's email, selected time range, and browser time zone are sent to Google for the free/busy and event queries.
-- Google returns busy start/end intervals and the event fields needed to show titles and timeframes. Google may hide details for private or restricted events, in which case Calendar Peek shows a generic busy label.
-- Availability results are cached in memory for up to two minutes while the Slack tab remains open.
-- The older Google Workspace handoff stores a pending email/name in `chrome.storage.local` for at most two minutes while it opens Calendar.
+- Calendar requests go directly from the extension to Google's official Calendar API.
+- Google receives the selected coworker's email, selected time range, and browser time zone for the requested queries.
+- Private or restricted events may appear as a generic busy block.
+- Availability results stay in memory for up to two minutes while the Slack tab is open.
+- The Google Workspace handoff stores a pending email/name in `chrome.storage.local` for up to two minutes.
 
-Manifest permissions:
+Manifest permissions are used for:
 
-- `alarms`: delete an unused Google Calendar handoff after two minutes.
-- `identity`: run Google OAuth after explicit user authorization.
-- `storage`: briefly queue a coworker for the native Google Calendar view.
+- `identity`: Google OAuth after explicit authorization.
+- `storage`: temporarily queue a coworker for Google Calendar.
 - `tabs`: open or focus Google Calendar.
-- Google Workspace hosts: detect visible profile cards and automate the native Calendar people search.
-- Slack hosts: detect a visible coworker profile and add the availability button.
-- `www.googleapis.com`: call the official Google Calendar free/busy and read-only events endpoints.
+- `alarms`: remove an expired Calendar handoff.
+- Google Workspace hosts: detect profiles and use Calendar's native people search.
+- Slack hosts: detect profiles and add the availability button.
+- `www.googleapis.com`: call the read-only Calendar API endpoints.
 
-See [`PRIVACY.md`](PRIVACY.md) for the concise privacy statement.
+See [`PRIVACY.md`](PRIVACY.md) for the short privacy statement.
 
-## Project structure
-
-```text
-calendar-peek-extension/
-├── manifest.json
-├── background.js
-├── src/
-│   ├── availability-utils.js
-│   ├── calendar.js
-│   ├── common.js
-│   ├── profile-card.js
-│   ├── slack.js
-│   └── styles.css
-├── popup/
-│   ├── popup.html
-│   ├── popup.css
-│   └── popup.js
-├── options/
-│   ├── options.html
-│   ├── options.css
-│   └── options.js
-├── tools/
-│   └── configure-oauth.py
-├── tests/
-├── icons/
-├── SETUP_GOOGLE_OAUTH.md
-├── PRIVACY.md
-├── CHANGELOG.md
-└── LICENSE
-```
-
-## Development checks
+## Development
 
 ```bash
 node --check background.js src/*.js popup/*.js options/*.js
@@ -126,7 +91,20 @@ node tests/background.test.js
 node tests/run-browser-smoke.js
 ```
 
-The browser smoke test uses an isolated Slack profile-card fixture. It verifies button injection, profile-card reuse, popup rendering, event titles, and free/busy blocks without connecting to a real Slack or Google account.
+The browser smoke test uses an isolated Slack profile fixture. It checks button injection, profile reuse, popup rendering, event titles, and free/busy blocks without connecting to a real account.
+
+## Project structure
+
+```text
+manifest.json       Extension manifest
+background.js       Service worker
+src/                Calendar, Slack, profile, and shared logic
+popup/              Toolbar popup
+options/            OAuth setup page
+tools/              OAuth configuration helper
+tests/              Unit and browser smoke tests
+icons/              Extension icons
+```
 
 ## License
 
