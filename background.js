@@ -210,13 +210,13 @@ async function getAvailability(message) {
   let eventDetailsMessage = '';
 
   try {
-    let eventsResult = await requestEvents(token, email, timeMin, timeMax, timeZone);
+    let eventsResult = await requestAllEvents(token, email, timeMin, timeMax, timeZone);
 
     if (eventsResult.unauthorized) {
       await clearStoredGoogleAccessToken();
       if (interactive) {
         token = await getGoogleAccessToken(true);
-        eventsResult = await requestEvents(token, email, timeMin, timeMax, timeZone);
+        eventsResult = await requestAllEvents(token, email, timeMin, timeMax, timeZone);
       }
     }
 
@@ -464,7 +464,7 @@ async function requestFreeBusy(token, body) {
   });
 }
 
-async function requestEvents(token, calendarId, timeMin, timeMax, timeZone) {
+async function requestEvents(token, calendarId, timeMin, timeMax, timeZone, pageToken = '') {
   const url = new URL(`${GOOGLE_EVENTS_URL}/${encodeURIComponent(calendarId)}/events`);
   url.search = new URLSearchParams({
     timeMin,
@@ -474,10 +474,43 @@ async function requestEvents(token, calendarId, timeMin, timeMax, timeZone) {
     orderBy: 'startTime',
     showDeleted: 'false',
     maxResults: '2500',
-    fields: 'items(id,summary,start,end,status,transparency)'
+    fields: 'items(id,summary,start,end,status,transparency),nextPageToken'
   }).toString();
+  if (pageToken) {
+    url.searchParams.set('pageToken', pageToken);
+  }
 
   return requestGoogleJson(token, url.toString(), { method: 'GET' });
+}
+
+async function requestAllEvents(token, calendarId, timeMin, timeMax, timeZone) {
+  const items = [];
+  const seenPageTokens = new Set();
+  let pageToken = '';
+
+  while (true) {
+    const result = await requestEvents(token, calendarId, timeMin, timeMax, timeZone, pageToken);
+    if (result.unauthorized) {
+      return result;
+    }
+
+    const pageItems = result.payload && Array.isArray(result.payload.items)
+      ? result.payload.items
+      : [];
+    items.push(...pageItems);
+
+    const nextPageToken = result.payload && typeof result.payload.nextPageToken === 'string'
+      ? result.payload.nextPageToken
+      : '';
+    if (!nextPageToken) {
+      return { unauthorized: false, payload: { items } };
+    }
+    if (seenPageTokens.has(nextPageToken)) {
+      throw new CalendarPeekError('google_api_error', 'Google Calendar returned a repeated events page token.');
+    }
+    seenPageTokens.add(nextPageToken);
+    pageToken = nextPageToken;
+  }
 }
 
 async function requestGoogleJson(token, url, options) {

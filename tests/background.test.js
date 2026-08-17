@@ -200,13 +200,30 @@ async function run() {
     assert.equal(eventUrl.searchParams.get('timeZone'), 'Europe/Madrid');
     assert.equal(eventUrl.searchParams.get('singleEvents'), 'true');
     assert.equal(eventUrl.searchParams.get('orderBy'), 'startTime');
+    assert.equal(eventUrl.searchParams.get('maxResults'), '2500');
+    const pageToken = eventUrl.searchParams.get('pageToken');
+    if (!pageToken) {
+      return jsonResponse(200, {
+        nextPageToken: 'page-two',
+        items: [
+          {
+            id: 'event-1',
+            summary: 'Design review',
+            start: { dateTime: '2026-08-17T08:00:00.000Z' },
+            end: { dateTime: '2026-08-17T09:00:00.000Z' },
+            status: 'confirmed'
+          }
+        ]
+      });
+    }
+    assert.equal(pageToken, 'page-two');
     return jsonResponse(200, {
       items: [
         {
-          id: 'event-1',
-          summary: 'Design review',
-          start: { dateTime: '2026-08-17T08:00:00.000Z' },
-          end: { dateTime: '2026-08-17T09:00:00.000Z' },
+          id: 'event-2',
+          summary: 'Planning session',
+          start: { dateTime: '2026-08-17T10:00:00.000Z' },
+          end: { dateTime: '2026-08-17T11:00:00.000Z' },
           status: 'confirmed'
         }
       ]
@@ -225,14 +242,24 @@ async function run() {
   assert.deepEqual(JSON.parse(JSON.stringify(success.busy)), [
     { start: '2026-08-17T08:00:00.000Z', end: '2026-08-17T09:00:00.000Z' }
   ]);
-  assert.deepEqual(JSON.parse(JSON.stringify(success.events)), [{
-    id: 'event-1',
-    title: 'Design review',
-    start: '2026-08-17T08:00:00.000Z',
-    end: '2026-08-17T09:00:00.000Z',
-    allDay: false,
-    isBusy: true
-  }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(success.events)), [
+    {
+      id: 'event-1',
+      title: 'Design review',
+      start: '2026-08-17T08:00:00.000Z',
+      end: '2026-08-17T09:00:00.000Z',
+      allDay: false,
+      isBusy: true
+    },
+    {
+      id: 'event-2',
+      title: 'Planning session',
+      start: '2026-08-17T10:00:00.000Z',
+      end: '2026-08-17T11:00:00.000Z',
+      allDay: false,
+      isBusy: true
+    }
+  ]);
   assert.equal(success.eventDetailsAvailable, true);
 
   harness.setFetchHandler(async (url) => {
