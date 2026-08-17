@@ -1,0 +1,30 @@
+.calendar-peek-toast {
+  align-items: center !important;
+  background: #202124 !important;
+  border-radius: 6px !important;
+  bottom: 24px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28) !important;
+  box-sizing: border-box !important;
+  color: #fff !important;
+  display: flex !important;
+  font: 500 14px/20px Arial, sans-serif !important;
+  left: 50% !important;
+  max-width: min(520px, calc(100vw - 32px)) !important;
+  min-height: 44px !important;
+  opacity: 0 !important;
+  padding: 12px 18px !important;
+  pointer-events: none !important;
+  position: fixed !important;
+  transform: translate(-50%, 12px) !important;
+  transition: opacity 160ms ease, transform 160ms ease !important;
+  z-index: 2147483647 !important;
+}
+
+.calendar-peek-toast--visible {
+  opacity: 1 !important;
+  transform: translate(-50%, 0) !important;
+}
+
+.calendar-peek-toast--error {
+  background: #b3261e !important;
+}
