@@ -85,3 +85,16 @@ button svg { height: 19px; width: 19px; }
   line-height: 16px;
   margin: 14px 0 0;
 }
+
+.setup-link {
+  color: #1a73e8;
+  display: block;
+  font-size: 11px;
+  line-height: 16px;
+  margin-top: 8px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.setup-link:hover { text-decoration: underline; }
+.setup-link:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }

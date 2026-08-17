@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Calendar Peek Slack smoke test</title>
+  <style>
+    html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
+    body { background: #f4f4f4; }
+    .profile {
+      background: white;
+      border-left: 1px solid #ddd;
+      box-sizing: border-box;
+      height: 620px;
+      padding: 24px;
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 380px;
+    }
+    .profile img { background: #ccc; border-radius: 12px; display: block; height: 64px; width: 64px; }
+    .actions { display: flex; gap: 8px; margin-top: 18px; }
+  </style>
+  <script>
+    window.chrome = window.chrome || {};
+    window.chrome.runtime = {
+      sendMessage: async (message) => {
+        window.lastCalendarPeekMessage = message;
+        if (message.type === 'CALENDAR_PEEK_FREEBUSY') {
+          const start = Date.parse(message.timeMin);
+          return {
+            ok: true,
+            person: message.person,
+            timeMin: message.timeMin,
+            timeMax: message.timeMax,
+            timeZone: message.timeZone,
+            busy: [
+              {
+                start: new Date(start + (9 * 60 + 30) * 60 * 1000).toISOString(),
+                end: new Date(start + 10 * 60 * 60 * 1000).toISOString()
+              },
+              {
+                start: new Date(start + 14 * 60 * 60 * 1000).toISOString(),
+                end: new Date(start + 15 * 60 * 60 * 1000).toISOString()
+              }
+            ],
+            events: [
+              {
+                id: 'chapter-automation',
+                title: 'Chapter - Automation',
+                start: new Date(start + (9 * 60 + 30) * 60 * 1000).toISOString(),
+                end: new Date(start + 10 * 60 * 60 * 1000).toISOString(),
+                isBusy: true
+              },
+              {
+                id: 'onboarding-check',
+                title: 'Onboarding Check',
+                start: new Date(start + 14 * 60 * 60 * 1000).toISOString(),
+                end: new Date(start + 15 * 60 * 60 * 1000).toISOString(),
+                isBusy: true
+              }
+            ]
+          };
+        }
+        return { ok: true };
+      }
+    };
+  </script>
+</head>
+<body data-theme="dark">
+  <aside class="profile" data-qa="member_profile" aria-label="Member profile">
+    <img alt="Alex Morgan" src="data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%221%22 height%3D%221%22%3E%3Crect width%3D%221%22 height%3D%221%22 fill%3D%22%23ff0000%22%2F%3E%3C%2Fsvg%3E">
+    <h2 class="p-r_member_profile__name__text">Alex Morgan</h2>
+    <p>Product design</p>
+    <a href="mailto:alex.morgan@example.com">alex.morgan@example.com</a>
+    <div class="actions">
+      <button aria-label="Message Alex Morgan">Message</button>
+      <button aria-label="More actions for Alex Morgan">More</button>
+    </div>
+  </aside>
+
+  <script src="../src/common.js"></script>
+  <script src="../src/availability-utils.js"></script>
+  <script src="../src/slack.js"></script>
+  <script>
+    setTimeout(() => {
+      const initialButton = document.querySelector('[data-calendar-peek-slack-button]');
+      if (!initialButton || !initialButton.shadowRoot) {
+        document.body.dataset.calendarPeekSmoke = 'missing-button';
+        return;
+      }
+
+      const profile = document.querySelector('[data-qa="member_profile"]');
+      const name = profile.querySelector('.p-r_member_profile__name__text');
+      const email = profile.querySelector('a[href^="mailto:"]');
+      name.textContent = 'Jamie Chen';
+      email.href = 'mailto:jamie.chen@example.com';
+      email.textContent = 'jamie.chen@example.com';
+
+      setTimeout(() => {
+        const buttonHost = document.querySelector('[data-calendar-peek-slack-button]');
+        if (!buttonHost || !buttonHost.shadowRoot) {
+          document.body.dataset.calendarPeekSmoke = 'missing-updated-button';
+          return;
+        }
+
+        buttonHost.shadowRoot.querySelector('button').click();
+        setTimeout(() => {
+          const popoverHost = document.querySelector('[data-calendar-peek-slack-popover]');
+          const timeline = popoverHost && popoverHost.shadowRoot
+            ? popoverHost.shadowRoot.querySelector('.timeline')
+            : null;
+          const busyBlocks = popoverHost && popoverHost.shadowRoot
+            ? popoverHost.shadowRoot.querySelectorAll('.busy-block').length
+            : 0;
+          const rangeItems = popoverHost && popoverHost.shadowRoot
+            ? [...popoverHost.shadowRoot.querySelectorAll('[data-role="time-range"]')]
+            : [];
+          const rangeDisclosure = popoverHost && popoverHost.shadowRoot
+            ? popoverHost.shadowRoot.querySelector('.range-disclosure')
+            : null;
+          document.body.dataset.calendarPeekSmoke = JSON.stringify({
+            button: Boolean(buttonHost),
+            buttonCount: document.querySelectorAll('[data-calendar-peek-slack-button]').length,
+            buttonEmail: buttonHost.getAttribute('data-calendar-peek-slack-button'),
+            requestedEmail: window.lastCalendarPeekMessage && window.lastCalendarPeekMessage.person
+              ? window.lastCalendarPeekMessage.person.email
+              : '',
+            requestedName: window.lastCalendarPeekMessage && window.lastCalendarPeekMessage.person
+              ? window.lastCalendarPeekMessage.person.name
+              : '',
+            popoverName: popoverHost && popoverHost.shadowRoot
+              ? popoverHost.shadowRoot.querySelector('[data-role="person-name"]').textContent
+              : '',
+            avatarSrc: popoverHost && popoverHost.shadowRoot
+              ? (popoverHost.shadowRoot.querySelector('[data-role="person-avatar"] img') || {}).src || ''
+              : '',
+            popoverTheme: popoverHost ? popoverHost.getAttribute('data-theme') : '',
+            rangeCount: rangeItems.length,
+            rangeLabels: rangeItems.map((item) => item.textContent.trim()),
+            rangeDisclosure: Boolean(rangeDisclosure),
+            rangeDisclosureOpen: Boolean(rangeDisclosure && rangeDisclosure.open),
+            dragHandle: Boolean(popoverHost && popoverHost.shadowRoot.querySelector('[data-role="drag-handle"]')),
+            eventTitles: [...popoverHost.shadowRoot.querySelectorAll('.event-block strong')]
+              .map((element) => element.textContent.trim()),
+            popover: Boolean(popoverHost),
+            timeline: Boolean(timeline),
+            busyBlocks
+          });
+        }, 900);
+      }, 500);
+    }, 900);
+  </script>
+</body>
+</html>

@@ -2,11 +2,13 @@
   "manifest_version": 3,
   "name": "Calendar Peek",
   "short_name": "Cal Peek",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "minimum_chrome_version": "111",
-  "description": "Open a coworker's shared Google Calendar from their Google profile card with one click.",
+  "description": "See a coworker's Google Calendar availability from Google Workspace or Slack with one click.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA65QSNa6tuw26AcY+tcU7/G/BmWa2aYZd7qpRORguzpJKsRTVEfvsK3VSW82Au3nSO1ZQ4Df96O9gCYOrH/bUUtXwbRfx6DH/RaEB1iARp09som1S4jeY9cnW/ztTriKx/GUWdhaZKqH8tdbEDXjg+TEMyJj8ZTxen2XJOHd/RCM5UdMy54fe9Gu2AkhttsR3rvAh05xuZx7zCRA8zzP9jafrMx/6lKNzPbFXG0A1lIDAAs23uzY+WfccvmOveBCnovsvT38W245g6P6ngVs0FqbiaHw+G5+iKN/n6fZRr/i5g96aFjlVnJ/ZLu/WVOK9EC7CgtT+RUu41otSImil6wIDAQAB",
   "permissions": [
     "alarms",
+    "identity",
     "storage",
     "tabs"
   ],
@@ -17,11 +19,14 @@
     "https://docs.google.com/*",
     "https://meet.google.com/*",
     "https://chat.google.com/*",
-    "https://contacts.google.com/*"
+    "https://contacts.google.com/*",
+    "https://*.slack.com/*",
+    "https://www.googleapis.com/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
+  "options_page": "options/options.html",
   "action": {
     "default_title": "View coworker calendar",
     "default_popup": "popup/popup.html",
@@ -74,6 +79,17 @@
       "run_at": "document_idle",
       "all_frames": true,
       "match_origin_as_fallback": true
+    },
+    {
+      "matches": [
+        "https://*.slack.com/*"
+      ],
+      "js": [
+        "src/common.js",
+        "src/availability-utils.js",
+        "src/slack.js"
+      ],
+      "run_at": "document_idle"
     }
   ]
 }

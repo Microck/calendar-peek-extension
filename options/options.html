@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calendar Peek setup</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <img src="../icons/icon128.png" width="64" height="64" alt="">
+      <div>
+        <p class="eyebrow">Calendar Peek</p>
+        <h1>Enable availability inside Slack</h1>
+        <p>Calendar Peek uses Slack’s visible profile email and Google’s read-only Calendar API to show event names and availability. No Slack app or backend is required.</p>
+      </div>
+    </header>
+
+    <section class="status-card" aria-live="polite">
+      <div>
+        <span class="status-dot" id="status-dot"></span>
+        <strong id="status-title">Checking setup…</strong>
+        <p id="status-detail"></p>
+      </div>
+      <div class="status-actions">
+        <button id="connect" class="primary" type="button" hidden>Connect Google Calendar</button>
+        <button id="disconnect" class="secondary" type="button" hidden>Disconnect</button>
+        <button id="retry-status" class="secondary" type="button" hidden>Check again</button>
+        <button id="reload-options" class="primary" type="button" hidden>Reload setup page</button>
+      </div>
+    </section>
+
+    <section>
+      <div class="step-heading">
+        <span>1</span>
+        <div>
+          <h2>Create the Google project</h2>
+          <p>Enable the Google Calendar API and configure an OAuth consent screen. For a company Workspace, an Internal consent screen is usually the simplest option.</p>
+        </div>
+      </div>
+      <div class="button-row">
+        <a class="secondary link" href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" rel="noreferrer">Enable Calendar API</a>
+        <a class="secondary link" href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noreferrer">OAuth consent screen</a>
+      </div>
+    </section>
+
+    <section>
+      <div class="step-heading">
+        <span>2</span>
+        <div>
+          <h2>Create a browser-compatible OAuth client</h2>
+          <p>Choose <strong>Web application</strong> as the application type. Add <code>https://<span data-redirect-host>your-extension-id</span>.chromiumapp.org/</code> as an authorized redirect URI.</p>
+        </div>
+      </div>
+      <div class="copy-field">
+        <code id="extension-id"></code>
+        <button id="copy-extension-id" class="secondary compact" type="button">Copy</button>
+      </div>
+      <div class="button-row">
+        <a class="secondary link" href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noreferrer">Create OAuth client</a>
+      </div>
+    </section>
+
+    <section>
+      <div class="step-heading">
+        <span>3</span>
+        <div>
+          <h2>Add the client ID to Calendar Peek</h2>
+          <p>Paste the generated client ID below. The guided button can update the source <code>manifest.json</code> you select; then reload Calendar Peek from <code>chrome://extensions</code>.</p>
+        </div>
+      </div>
+
+      <label for="client-id">Google OAuth client ID</label>
+      <input id="client-id" type="text" autocomplete="off" spellcheck="false" placeholder="1234567890-example.apps.googleusercontent.com">
+      <p class="field-error" id="client-id-error" role="alert"></p>
+
+      <div class="button-row">
+        <button id="patch-manifest" class="primary" type="button">Choose manifest.json and apply</button>
+        <button id="copy-oauth-block" class="secondary" type="button">Copy manifest block</button>
+      </div>
+      <p class="helper" id="patch-result" aria-live="polite"></p>
+
+      <details>
+        <summary>Manual alternative</summary>
+        <p>Add the following top-level block to <code>manifest.json</code>, replacing the example client ID, and reload the extension:</p>
+        <pre id="oauth-preview"></pre>
+      </details>
+    </section>
+
+    <section class="privacy-note">
+      <h2>What is authorized</h2>
+      <p>Calendar Peek requests <code>calendar.events.freebusy</code> for availability and <code>calendar.events.readonly</code> for event names and start/end times. It does not request descriptions, attendees, locations, or editing access.</p>
+    </section>
+  </main>
+
+  <script src="options.js"></script>
+</body>
+</html>
