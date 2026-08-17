@@ -6,6 +6,7 @@
   }
 
   const HOST_ATTRIBUTE = 'data-calendar-peek-button-host';
+  const NAME_ATTRIBUTE = 'data-calendar-peek-person-name';
   const TEMPORARY_ATTRIBUTE = 'data-calendar-peek-temporary';
   const POSITION_ATTRIBUTE = 'data-calendar-peek-positioned';
   const CARD_SELECTORS = [
@@ -84,8 +85,14 @@
         continue;
       }
 
-      if (card.querySelector(`[${HOST_ATTRIBUTE}]`)) {
-        continue;
+      const existing = card.querySelector(`[${HOST_ATTRIBUTE}]`);
+      if (existing) {
+        const existingEmail = existing.getAttribute(HOST_ATTRIBUTE) || '';
+        const existingName = existing.getAttribute(NAME_ATTRIBUTE) || '';
+        if (existingEmail === person.email && existingName === person.name) {
+          continue;
+        }
+        existing.remove();
       }
 
       removeTemporaryHostsForEmail(person.email);
@@ -296,6 +303,7 @@
   function createButtonHost(person) {
     const host = document.createElement('span');
     host.setAttribute(HOST_ATTRIBUTE, person.email);
+    host.setAttribute(NAME_ATTRIBUTE, person.name);
     host.setAttribute('aria-hidden', 'false');
     host.style.setProperty('z-index', '2147483647', 'important');
     host.style.setProperty('display', 'block', 'important');
