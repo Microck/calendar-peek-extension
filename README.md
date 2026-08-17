@@ -1,87 +1,87 @@
-# Calendar Peek
+# calendar peek
 
-A small, open-source Chrome/Edge extension for checking a coworker's Google Calendar availability from Google Workspace or Slack.
+small, open-source chrome/edge extension for checking a coworker's google calendar availability from google workspace or slack.
 
-![Calendar Peek Slack availability popup](docs/calendar-peek-slack.png)
+![calendar peek slack availability popup](docs/calendar-peek-slack.png)
 
-## What it does
+## what it does
 
-### Google Workspace
+### google workspace
 
-Click a coworker's avatar or name in Gmail, Calendar, Drive, Docs, Meet, Chat, or Contacts. Calendar Peek adds a calendar button that opens Google Calendar's native **Search for people** flow.
+click a coworker's avatar or name in gmail, calendar, drive, docs, meet, chat, or contacts. calendar peek adds a calendar button that opens google calendar's native **search for people** flow.
 
-The toolbar popup is also available as a fallback. Enter a work email and click **View calendar**.
+the toolbar popup is also available as a fallback. enter a work email and click **view calendar**.
 
-### Slack
+### slack
 
-On `app.slack.com` or another `*.slack.com` web URL:
+on `app.slack.com` or another `*.slack.com` web url:
 
-1. Open a coworker's profile.
-2. Click the Calendar Peek button if Slack exposes their email address.
-3. Use the popup to see event names, timeframes, busy blocks, and free windows.
-4. Move between previous, today, and next, or open the day in Google Calendar.
+1. open a coworker's profile.
+2. click the calendar peek button if slack exposes their email address.
+3. use the popup to see event names, timeframes, busy blocks, and free windows.
+4. move between previous, today, and next, or open the day in google calendar.
 
-This works in Slack's browser app only. It does not use a Slack app, Slack token, backend, or analytics.
+this works in slack's browser app only. no slack app, slack token, backend, or analytics.
 
-## Limitations
+## limitations
 
-- Slack must show the coworker's email in the profile UI.
-- The email must match a Google Calendar identifier you can access.
-- Google Calendar and Workspace sharing settings still apply. Calendar Peek cannot bypass them.
-- Google and Slack are changing single-page apps. UI changes may require updates to `src/slack.js`, `src/profile-card.js`, or `src/calendar.js`.
+- slack must show the coworker's email in the profile ui.
+- the email must match a google calendar identifier you can access.
+- google calendar and workspace sharing settings still apply. calendar peek cannot bypass them.
+- google and slack are changing single-page apps. ui changes may require updates to `src/slack.js`, `src/profile-card.js`, or `src/calendar.js`.
 
-## Install locally
+## install locally
 
-1. Open `chrome://extensions` in Chrome, Edge, Brave, or another Chromium browser.
-2. Enable **Developer mode**.
-3. Click **Load unpacked** and select this folder.
-4. Refresh open Google Workspace and Slack tabs.
+1. open `chrome://extensions` in chrome, edge, brave, or another chromium browser.
+2. enable **developer mode**.
+3. click **load unpacked** and select this folder.
+4. refresh open google workspace and slack tabs.
 
-The fixed development extension ID is:
+the fixed development extension id is:
 
 ```text
 pcdcgkbgimicaioepjbghpmmjadeghej
 ```
 
-## Google OAuth setup
+## google oauth setup
 
-The Google Workspace profile-card feature does not need OAuth. The Slack availability popup does, because Google requires an authorized OAuth client for Calendar API access.
+the google workspace profile-card feature does not need oauth. the slack availability popup does, because google requires an authorized oauth client for calendar api access.
 
-Follow [`SETUP_GOOGLE_OAUTH.md`](SETUP_GOOGLE_OAUTH.md), or open **Extension options** after loading the extension. The setup page can patch the selected `manifest.json` for you.
+follow [`SETUP_GOOGLE_OAUTH.md`](SETUP_GOOGLE_OAUTH.md), or open **extension options** after loading the extension. the setup page can patch the selected `manifest.json` for you.
 
-Calendar Peek requests these read-only scopes:
+calendar peek requests these read-only scopes:
 
 ```text
 https://www.googleapis.com/auth/calendar.events.freebusy
 https://www.googleapis.com/auth/calendar.events.readonly
 ```
 
-The first checks availability. The second reads event titles and times from calendars your account can already access. No descriptions, attendees, locations, or calendar editing access are requested.
+the first checks availability. the second reads event titles and times from calendars your account can already access. no descriptions, attendees, locations, or calendar editing access are requested.
 
-## Privacy and permissions
+## privacy and permissions
 
-- No analytics, advertising, trackers, remote scripts, or external servers.
-- No Slack API access or Slack tokens.
-- Slack profile data is read only from the page already visible to you.
-- Calendar requests go directly from the extension to Google's official Calendar API.
-- Google receives the selected coworker's email, selected time range, and browser time zone for the requested queries.
-- Private or restricted events may appear as a generic busy block.
-- Availability results stay in memory for up to two minutes while the Slack tab is open.
-- The Google Workspace handoff stores a pending email/name in `chrome.storage.local` for up to two minutes.
+- no analytics, advertising, trackers, remote scripts, or external servers.
+- no slack api access or slack tokens.
+- slack profile data is read only from the page already visible to you.
+- calendar requests go directly from the extension to google's official calendar api.
+- google receives the selected coworker's email, selected time range, and browser time zone for the requested queries.
+- private or restricted events may appear as a generic busy block.
+- availability results stay in memory for up to two minutes while the slack tab is open.
+- the google workspace handoff stores a pending email/name in `chrome.storage.local` for up to two minutes.
 
-Manifest permissions are used for:
+manifest permissions are used for:
 
-- `identity`: Google OAuth after explicit authorization.
-- `storage`: temporarily queue a coworker for Google Calendar.
-- `tabs`: open or focus Google Calendar.
-- `alarms`: remove an expired Calendar handoff.
-- Google Workspace hosts: detect profiles and use Calendar's native people search.
-- Slack hosts: detect profiles and add the availability button.
-- `www.googleapis.com`: call the read-only Calendar API endpoints.
+- `identity`: google oauth after explicit authorization.
+- `storage`: temporarily queue a coworker for google calendar.
+- `tabs`: open or focus google calendar.
+- `alarms`: remove an expired calendar handoff.
+- google workspace hosts: detect profiles and use calendar's native people search.
+- slack hosts: detect profiles and add the availability button.
+- `www.googleapis.com`: call the read-only calendar api endpoints.
 
-See [`PRIVACY.md`](PRIVACY.md) for the short privacy statement.
+see [`PRIVACY.md`](PRIVACY.md) for the short privacy statement.
 
-## Development
+## development
 
 ```bash
 node --check background.js src/*.js popup/*.js options/*.js
@@ -91,21 +91,21 @@ node tests/background.test.js
 node tests/run-browser-smoke.js
 ```
 
-The browser smoke test uses an isolated Slack profile fixture. It checks button injection, profile reuse, popup rendering, event titles, and free/busy blocks without connecting to a real account.
+the browser smoke test uses an isolated slack profile fixture. it checks button injection, profile reuse, popup rendering, event titles, and free/busy blocks without connecting to a real account.
 
-## Project structure
+## project structure
 
 ```text
-manifest.json       Extension manifest
-background.js       Service worker
-src/                Calendar, Slack, profile, and shared logic
-popup/              Toolbar popup
-options/            OAuth setup page
-tools/              OAuth configuration helper
-tests/              Unit and browser smoke tests
-icons/              Extension icons
+manifest.json       extension manifest
+background.js       service worker
+src/                calendar, slack, profile, and shared logic
+popup/              toolbar popup
+options/            oauth setup page
+tools/              oauth configuration helper
+tests/              unit and browser smoke tests
+icons/              extension icons
 ```
 
-## License
+## license
 
 MIT
