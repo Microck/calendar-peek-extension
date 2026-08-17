@@ -2,6 +2,8 @@
 
 open a coworker's shared Google Calendar from their Google profile card.
 
+![Calendar Peek Slack availability popup](docs/calendar-peek-slack.png)
+
 ## install
 
 1. open `chrome://extensions` in a Chromium browser.
