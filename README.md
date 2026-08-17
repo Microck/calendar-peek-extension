@@ -2,6 +2,8 @@
 
 Calendar Peek is a small, open-source Chrome/Edge extension for seeing a coworker's Google Calendar availability with one click.
 
+![Calendar Peek Slack availability popup](docs/calendar-peek-slack.png)
+
 ## Features
 
 ### Google Workspace profile cards
